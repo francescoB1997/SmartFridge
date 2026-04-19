@@ -4,26 +4,26 @@
 #include "releDriver.h"
 
 
-ReleDriver::ReleDriver() {
-  uint8_t relPin[] = { RELAY_GEN1, RELAY_GEN2, RELAY_FREDDO_1, RELAY_FREDDO_2, RELAY_CALDO_1, RELAY_CALDO_2};  
-
-  this->numRele = sizeof(relPin) / sizeof(uint8_t);
-  this->relayPin = new uint8_t[this->numRele];
+ReleDriver::ReleDriver(uint8_t res) {
   this->peltierState = false;
-  memcpy(this->relayPin, relPin, this->numRele);
+  this->setAsOutputPin();
+  ledcAttach(PWM_R, FREQ, res);
+  ledcAttach(PWM_L, FREQ, res);
+  this->maxOutputValue = (1UL << res) - 1;
 }
 
 void ReleDriver::setAsOutputPin(){
-  for (uint8_t i = 0; i < this->numRele; i++){
-    pinMode(this->relayPin[i], OUTPUT);
-  }
+  pinMode(EN_R, OUTPUT);
+  pinMode(EN_L, OUTPUT);
 }
 
 void ReleDriver::allOff() {
-  for(uint8_t i = 0; i < this->numRele; i++)
-    digitalWrite(this->relayPin[i], LOW);
+  digitalWrite(EN_R, LOW);
+  digitalWrite(EN_L, LOW);
+  ledcWrite(PWM_R, 0);
+  ledcWrite(PWM_L, 0);
   this->peltierState = false;
-  delay(50);
+  this->fanState = false;
 }
 
 void ReleDriver::allOffWithStore() {
@@ -33,34 +33,34 @@ void ReleDriver::allOffWithStore() {
 }
 
 void ReleDriver::generaliOff(){
-  for(uint8_t i = 0; i < 2; i++)
-    digitalWrite(this->relayPin[i], LOW);
+  digitalWrite(EN_R, LOW);
+  digitalWrite(EN_L, LOW);
 }
-
 void ReleDriver::generaliOn(){
-  for(uint8_t i = 0; i < 2; i++)
-    digitalWrite(this->relayPin[i], HIGH);
+  digitalWrite(EN_R, HIGH);
+  digitalWrite(EN_L, HIGH);
 }
 
 // ************************ MODIFICA 22/03/2026 ************************
 // Aggiunta funzionalità per accendere solo la ventola interna
 void ReleDriver::generaleGroundOn(){
-  digitalWrite(RELAY_GEN2, HIGH);
+  digitalWrite(EN_R, HIGH);
 }
 
 void ReleDriver::generaleGroundOff(){
-  digitalWrite(RELAY_GEN2, LOW);
+  digitalWrite(EN_R, LOW);
 }
 
 // The relè is activated ONLY if the mode is COLD.
 void ReleDriver::setFanOn(){
   this->fanState = true;
-  digitalWrite(RELAY_FREDDO_1, HIGH);
+  digitalWrite(EN_R, HIGH);
+  digitalWrite(EN_L, LOW);
 }
 
 void ReleDriver::setFanOff(){
   this->fanState = false;
-  digitalWrite(RELAY_FREDDO_1, LOW);
+  this->generaliOff();
 }
 
 bool ReleDriver::getFanState(){
@@ -211,36 +211,42 @@ void ReleDriver::changeMode(mode newMode){
   this->storeState();
 }
 
-void ReleDriver::relayHeatOn(){
+void ReleDriver::HeatOn(){
   if (this->state != HEAT)
     this->allOff();
-  digitalWrite(RELAY_CALDO_1, HIGH);
-  digitalWrite(RELAY_CALDO_2, HIGH);
+  this->generaliOn();
+
+  ledcWrite(PWM_R, 0);
+  ledcWrite(PWM_L, this->maxOutputValue);
   this->peltierState = true;
 }
 
-void ReleDriver::relayColdOn(){
-  if (this->state != COLD)
+void ReleDriver::ColdOn(){
+  if (this->state != FREDDO)
     this->allOff();
-  digitalWrite(RELAY_FREDDO_1, HIGH);
-  digitalWrite(RELAY_FREDDO_2, HIGH);
+  this->generaliOn();
+  
+  ledcWrite(PWM_L, 0);
+  ledcWrite(PWM_R, this->maxOutputValue);
+  Serial.print("INTERNAL: MaxVol: ");
+  Serial.println(this->maxOutputValue);
   this->peltierState = true;
 }
 
-void ReleDriver::relayHeatOff(){
-  digitalWrite(RELAY_CALDO_1, LOW);
-  digitalWrite(RELAY_CALDO_2, LOW);
+void ReleDriver::HeatOff(){
+  ledcWrite(PWM_L, 0);
+  ledcWrite(PWM_R, 0);
   this->peltierState = false;
 }
 
-void ReleDriver::relayColdOff(){
-  digitalWrite(RELAY_FREDDO_1, LOW);
-  digitalWrite(RELAY_FREDDO_2, LOW);
+void ReleDriver::ColdOff(){
+  ledcWrite(PWM_L, 0);
+  ledcWrite(PWM_R, 0);
   this->peltierState = false;
 }
 
 bool ReleDriver::getGeneraliRelayState(){
-  return digitalRead(RELAY_GEN1) && digitalRead(RELAY_GEN2);
+  return (digitalRead(EN_R) && digitalRead(EN_L));
 }
 
 mode ReleDriver::getState() {

@@ -3,12 +3,10 @@
 
 #include <Preferences.h>
 
-#define RELAY_FREDDO_1 8
-#define RELAY_FREDDO_2 9
-#define RELAY_CALDO_1 21
-#define RELAY_CALDO_2 20
-#define RELAY_GEN1 7
-#define RELAY_GEN2 10
+#define EN_R 20
+#define EN_L 21
+#define PWM_R 0
+#define PWM_L 1
 
 #define DEFAULT_SET_TEMPERATURE 25.0
 #define DEFAULT_TEMPERATURE_OFFSET 0.5
@@ -16,6 +14,9 @@
 #define DEFAULT_FAN_AUTO_TIME 30
 #define DEFAULT_FAN_AUTO_INTERTIME 30
 #define SET_TEMP_KEY "prevSet"
+
+#define FREQ 5000
+#define DEFAULT_LEDC_RESOLUTION 10
 
 #define WORKING_DATA_NAMESPACE "workingData"
 #define LAST_WORKING_MODE "lastMode"
@@ -29,13 +30,11 @@
 #define LAST_FAN_COOL_INTERTIME_AUTO "lastFCITA"
 
 
-
 enum mode{OFF, HEAT, COLD};
 
 class ReleDriver{
   private:
-    uint8_t *relayPin;
-    size_t numRele;
+    uint32_t maxOutputValue;
     mode state;
     bool autoMode;
     bool peltierState;
@@ -62,18 +61,18 @@ class ReleDriver{
     unsigned long fanCoolAutoTime;
     unsigned long fanHeatAutoInterTime;
     unsigned long fanCoolAutoInterTime;
-    ReleDriver();
+    ReleDriver(uint8_t);
 
     void setAsOutputPin();
     void allOff();
     void allOffWithStore();
     void changeMode(mode);
-    void generaliOn();
     void generaliOff();
-    void relayColdOn();
-    void relayHeatOn();
-    void relayHeatOff();
-    void relayColdOff();
+    void generaliOn();
+    void HeatOn();
+    void HeatOff();
+    void ColdOff();
+    void ColdOn();
     bool getGeneraliRelayState();
 
     mode getState();
