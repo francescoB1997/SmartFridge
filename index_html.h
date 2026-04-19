@@ -544,7 +544,9 @@ document.addEventListener("DOMContentLoaded", function() {
         <div class="input-group">
           <label>FREDDO (°C)</label>
           <input type="number" id="coolOffsetInput" step="0.1">
-          <br>
+        </div>
+
+        <div class="input-group">
           <label>CALDO (°C)</label>
           <input type="number" id="heatOffsetInput" step="0.1">
         </div>
