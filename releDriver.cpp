@@ -68,22 +68,40 @@ bool ReleDriver::getFanState(){
 }
 
 //PRIVATE
-void ReleDriver::storeTemperatureOffset(){
+void ReleDriver::storeCoolTemperatureOffset(){
   this->workingData.begin(WORKING_DATA_NAMESPACE, false);
-  this->workingData.putFloat(LAST_TEMP_OFFSET, this->offsetTemp);
+  this->workingData.putFloat(LAST_TEMP_COOL_OFFSET, this->coolOffsetTemp);
   this->workingData.end();
 }
 
-void ReleDriver::changeTemperatureOffset( float newOffset){
-  this->offsetTemp = newOffset;
-  this->storeTemperatureOffset();
+void ReleDriver::storeHeatTemperatureOffset(){
+  this->workingData.begin(WORKING_DATA_NAMESPACE, false);
+  this->workingData.putFloat(LAST_TEMP_HEAT_OFFSET, this->heatOffsetTemp);
+  this->workingData.end();
 }
 
-float ReleDriver::loadTemperatureOffset(){
+void ReleDriver::changeCoolTemperatureOffset( float newCoolOffset){
+  this->coolOffsetTemp = newCoolOffset;
+  this->storeCoolTemperatureOffset();
+}
+
+float ReleDriver::loadCoolTemperatureOffset(){
   this->workingData.begin(WORKING_DATA_NAMESPACE, true);
-  this->offsetTemp = this->workingData.getFloat(LAST_TEMP_OFFSET, DEFAULT_TEMPERATURE_OFFSET);
+  this->coolOffsetTemp = this->workingData.getFloat(LAST_TEMP_COOL_OFFSET, DEFAULT_TEMPERATURE_OFFSET);
   this->workingData.end();
-  return this->offsetTemp;
+  return this->coolOffsetTemp;
+}
+
+void ReleDriver::changeHeatTemperatureOffset( float newHeatOffset){
+  this->heatOffsetTemp = newHeatOffset;
+  this->storeHeatTemperatureOffset();
+}
+
+float ReleDriver::loadHeatTemperatureOffset(){
+  this->workingData.begin(WORKING_DATA_NAMESPACE, true);
+  this->heatOffsetTemp = this->workingData.getFloat(LAST_TEMP_HEAT_OFFSET, DEFAULT_TEMPERATURE_OFFSET);
+  this->workingData.end();
+  return this->heatOffsetTemp;
 }
 
 //PRIVATE

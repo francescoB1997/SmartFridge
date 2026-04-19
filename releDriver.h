@@ -21,7 +21,8 @@
 #define WORKING_DATA_NAMESPACE "workingData"
 #define LAST_WORKING_MODE "lastMode"
 #define LAST_AUTO_MODE "lastAutoMode"
-#define LAST_TEMP_OFFSET "lastOffset"
+#define LAST_TEMP_COOL_OFFSET "lastTCO"
+#define LAST_TEMP_HEAT_OFFSET "lastTHO"
 #define LAST_FAN_HEAT_AUTO "lastFHA"
 #define LAST_FAN_COOL_AUTO "lastFCA"
 #define LAST_FAN_HEAT_TIME_AUTO "lastFHTA"
@@ -44,7 +45,8 @@ class ReleDriver{
     void storeState();
     void storeAutoMode();
     void storeSetTemp();
-    void storeTemperatureOffset();
+    void storeHeatTemperatureOffset();
+    void storeCoolTemperatureOffset();
     void storeFanHeatAuto();
     void storeFanCoolAuto();
     void storeFanHeatAutoTime();
@@ -54,7 +56,8 @@ class ReleDriver{
     
 
   public:
-    float offsetTemp;
+    float heatOffsetTemp;
+    float coolOffsetTemp;
     bool fanHeatAuto;
     bool fanCoolAuto;
     unsigned long fanHeatAutoTime;
@@ -91,8 +94,10 @@ class ReleDriver{
     void setFanOff();
     bool getFanState();
 
-    void changeTemperatureOffset(float);
-    float loadTemperatureOffset();
+    void changeHeatTemperatureOffset(float);
+    float loadHeatTemperatureOffset();
+    void changeCoolTemperatureOffset(float);
+    float loadCoolTemperatureOffset();
 
     void changeFanHeatAuto(bool);
     bool loadFanHeatAuto();

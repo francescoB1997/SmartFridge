@@ -49,7 +49,8 @@ void setup() {
   Serial.begin(115200);
   relayModule.setAsOutputPin();
   relayModule.allOff();
-  relayModule.loadTemperatureOffset();
+  relayModule.loadCoolTemperatureOffset();
+  relayModule.loadHeatTemperatureOffset();
   relayModule.loadFanCoolAuto();
   relayModule.loadFanHeatAuto();
   relayModule.loadFanHeatAutoTime();
@@ -130,7 +131,8 @@ void setup() {
     } else {
       json += "\"temp\":" + String(currentTemp, 2) + ",";
     }
-    json += "\"offset\":" + String(relayModule.offsetTemp, 2) + ",";
+    json += "\"coolOffset\":" + String(relayModule.coolOffsetTemp, 2) + ",";
+    json += "\"heatOffset\":" + String(relayModule.heatOffsetTemp, 2) + ",";
     json += "\"set\":" + String(setTemp, 2) + ",";
     json += "\"auto\":" + String(autoMode ? "true" : "false") + ",";
     json += "\"fanHeatAuto\":" + String(relayModule.fanHeatAuto ? "true" : "false") + ",";
@@ -179,9 +181,14 @@ void setup() {
       autoMode = relayModule.getAutoMode();
     }
 
-    if (msg.startsWith("OFFSET:")) {
-      float newOffset = msg.substring(7).toFloat();
-      relayModule.changeTemperatureOffset(newOffset);
+    if (msg.startsWith("COOL_OFFSET:")) {
+      float newOffset = msg.substring(12).toFloat();
+      relayModule.changeCoolTemperatureOffset(newOffset);
+    }
+
+    if (msg.startsWith("HEAT_OFFSET:")) {
+      float newOffset = msg.substring(12).toFloat();
+      relayModule.changeHeatTemperatureOffset(newOffset);
     }
 
     if (msg.startsWith("FANHEAT_AUTO:ON")) {
@@ -226,7 +233,8 @@ void setup() {
       json += "\"temp\":" + String(currentTemp, 2) + ",";
     }
     json += "\"set\":" + String(setTemp, 2) + ",";
-    json += "\"offset\":" + String(relayModule.offsetTemp, 2) + ",";
+    json += "\"coolOffset\":" + String(relayModule.coolOffsetTemp, 2) + ",";
+    json += "\"heatOffset\":" + String(relayModule.heatOffsetTemp, 2) + ",";
     json += "\"auto\":" + String(autoMode ? "true" : "false") + ",";
     json += "\"peltier\":" + String(relayModule.getPeltierState() ? "true" : "false") + ",";
     json += "\"fan\":" + String(fanStateView ? "true" : "false") + ",";
@@ -269,8 +277,9 @@ void loop()
         Serial.println("# AUTO MODE ON");
         switch(workingMode){
           case HEAT:
-              Serial.println("* CASE HEAT");
-              if (currentTemp < (setTemp - relayModule.offsetTemp) ) {
+              Serial.print("* CASE HEAT. Heat Offset: ");
+              Serial.println(relayModule.heatOffsetTemp);
+              if (currentTemp < (setTemp - relayModule.heatOffsetTemp) ) {
                 if (relayModule.getFanState()) {
                   relayModule.setFanOff();
                   relayModule.allOff();
@@ -284,8 +293,9 @@ void loop()
                 }                
             break;
           case FREDDO:
-              Serial.println("* CASE FREDDO");
-              if (currentTemp > (setTemp + relayModule.offsetTemp) ) {
+              Serial.print("* CASE FREDDO. Cool Offset: ");
+              Serial.println(relayModule.coolOffsetTemp);
+              if (currentTemp > (setTemp + relayModule.coolOffsetTemp) ) {
                 if (relayModule.getFanState()) {
                   relayModule.setFanOff();
                   relayModule.allOff();
@@ -338,7 +348,7 @@ void loop()
 
     if (workingMode == FREDDO) 
     {
-      if ((!relayModule.getPeltierState()) && (relayModule.fanCoolAuto) && ( (!autoMode) || (currentTemp <= (setTemp + relayModule.offsetTemp))) )
+      if ((!relayModule.getPeltierState()) && (relayModule.fanCoolAuto) && ( (!autoMode) || (currentTemp <= (setTemp + relayModule.coolOffsetTemp))) )
       {
         Serial.println("Ventola attivabile. Check time");
         if (relayModule.getFanState() || ((millis() - fanInterTime) > (relayModule.fanCoolAutoInterTime * 1000)))
@@ -372,7 +382,7 @@ void loop()
       }
     }
     else if (workingMode == HEAT) {
-      if ((!relayModule.getPeltierState()) && (relayModule.fanHeatAuto) && ((!autoMode) || (currentTemp >= (setTemp - relayModule.offsetTemp))) )
+      if ((!relayModule.getPeltierState()) && (relayModule.fanHeatAuto) && ((!autoMode) || (currentTemp >= (setTemp - relayModule.heatOffsetTemp))) )
       {
           if (relayModule.getFanState() || ((millis() - fanInterTime) > (relayModule.fanHeatAutoInterTime * 1000)))
           {
@@ -412,7 +422,8 @@ void loop()
     } else {
       json += "\"temp\":" + String(currentTemp, 2) + ",";
     }
-    json += "\"offset\":" + String(relayModule.offsetTemp, 2) + ",";
+    json += "\"coolOffset\":" + String(relayModule.coolOffsetTemp, 2) + ",";
+    json += "\"heatOffset\":" + String(relayModule.heatOffsetTemp, 2) + ",";
     json += "\"set\":" + String(setTemp, 2) + ",";
     json += "\"auto\":" + String(autoMode ? "true" : "false") + ",";
     json += "\"peltier\":" + String(relayModule.getPeltierState() ? "true" : "false") + ",";

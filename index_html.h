@@ -291,9 +291,13 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("mode").innerText = data.mode;
     document.getElementById("slider").value = data.set;
     document.getElementById("autoToggle").checked = data.auto;
-    var offsetInput = document.getElementById("offsetInput");
-    if (document.activeElement !== offsetInput) {
-        offsetInput.value = data.offset;
+    var coolOffsetInput = document.getElementById("coolOffsetInput");
+    if (document.activeElement !== coolOffsetInput) {
+        coolOffsetInput.value = data.coolOffset;
+    }
+    var heatOffsetInput = document.getElementById("heatOffsetInput");
+    if (document.activeElement !== heatOffsetInput) {
+        heatOffsetInput.value = data.heatOffset;
     }
 
     var text = document.getElementById("peltierText");
@@ -401,12 +405,14 @@ document.addEventListener("DOMContentLoaded", function() {
       });
   });
 
-  document.getElementById("saveOffsetBtn").addEventListener("click", function() {
-    var offset = parseFloat(document.getElementById("offsetInput").value).toFixed(2);
+  document.getElementById("coolOffsetInput").addEventListener("change", function(){
+    var offset = parseFloat(this.value).toFixed(2);
+    ws.send("COOL_OFFSET:" + offset);
+  });
 
-    ws.send("OFFSET:" + offset);
-
-    alert("Offset salvato!");
+  document.getElementById("heatOffsetInput").addEventListener("change", function(){
+    var offset = parseFloat(this.value).toFixed(2);
+    ws.send("HEAT_OFFSET:" + offset);
   });
 
   // Fan Heat Auto toggle
@@ -529,10 +535,20 @@ document.addEventListener("DOMContentLoaded", function() {
     <h3>Parametri</h3>
 
     
-    <div class="inline-setting" align="center">
-      <label>Offset °C:</label>
-      <input type="number" id="offsetInput" step="0.1" value="">
-      <button id="saveOffsetBtn">Salva</button>
+    <div class="setting-box">
+      <div class="setting-header">
+        <span>Offset Temperature</span>
+      </div>
+
+      <div class="setting-inputs">
+        <div class="input-group">
+          <label>FREDDO (°C)</label>
+          <input type="number" id="coolOffsetInput" step="0.1">
+          <br>
+          <label>CALDO (°C)</label>
+          <input type="number" id="heatOffsetInput" step="0.1">
+        </div>
+      </div>
     </div>
 
     <!-- FAN COOL AUTO -->
