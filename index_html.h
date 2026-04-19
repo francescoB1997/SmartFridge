@@ -300,6 +300,15 @@ document.addEventListener("DOMContentLoaded", function() {
         heatOffsetInput.value = data.heatOffset;
     }
 
+    var coolPwmInput = document.getElementById("coolPwmInput");
+    if (document.activeElement !== coolPwmInput) {
+        coolPwmInput.value = data.coolPwm;
+    }
+    var heatPwmInput = document.getElementById("heatPwmInput");
+    if (document.activeElement !== heatPwmInput) {
+        heatPwmInput.value = data.heatPwm;
+    }    
+
     var text = document.getElementById("peltierText");
     var led = document.getElementById("peltierLed");
     if (data.peltier) {
@@ -413,6 +422,16 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("heatOffsetInput").addEventListener("change", function(){
     var offset = parseFloat(this.value).toFixed(2);
     ws.send("HEAT_OFFSET:" + offset);
+  });
+
+  document.getElementById("coolPwmInput").addEventListener("change", function(){
+    var pwm = parseFloat(this.value).toFixed(2);
+    ws.send("COOL_PWM:" + pwm);
+  });
+
+  document.getElementById("heatPwmInput").addEventListener("change", function(){
+    var pwm = parseFloat(this.value).toFixed(2);
+    ws.send("HEAT_PWM:" + pwm);
   });
 
   // Fan Heat Auto toggle
@@ -597,6 +616,25 @@ document.addEventListener("DOMContentLoaded", function() {
         <div class="input-group">
           <label>INTER TIME (s)</label>
           <input type="number" id="fanHeatInterTimeInput">
+        </div>
+      </div>
+    </div>
+
+
+    <div class="setting-box">
+      <div class="setting-header">
+        <span>Potenza PWM</span>
+      </div>
+
+      <div class="setting-inputs">
+        <div class="input-group">
+          <label>FREDDO (%)</label>
+          <input type="number" id="coolPwmInput" min="50" max="100" step="1">
+        </div>
+
+        <div class="input-group">
+          <label>CALDO (%)</label>
+          <input type="number" id="heatPwmInput" min="50" max="100" step="1">
         </div>
       </div>
     </div>

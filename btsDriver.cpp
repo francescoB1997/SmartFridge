@@ -50,7 +50,6 @@ void BtsDriver::generaleGroundOff(){
   digitalWrite(EN_R, LOW);
 }
 
-// The relè is activated ONLY if the mode is COLD.
 void BtsDriver::setFanOn(){
   this->fanState = true;
   digitalWrite(EN_R, HIGH);
@@ -79,7 +78,19 @@ void BtsDriver::storeHeatTemperatureOffset(){
   this->workingData.end();
 }
 
-void BtsDriver::changeCoolTemperatureOffset( float newCoolOffset){
+void BtsDriver::storeCoolPwm(){
+  this->workingData.begin(WORKING_DATA_NAMESPACE, false);
+  this->workingData.putUInt(LAST_COOL_PWM, this->coolPwm);
+  this->workingData.end();
+}
+
+void BtsDriver::storeHeatPwm(){
+  this->workingData.begin(WORKING_DATA_NAMESPACE, false);
+  this->workingData.putUInt(LAST_HEAT_PWM, this->heatPwm);
+  this->workingData.end();
+}
+
+void BtsDriver::changeCoolTemperatureOffset(float newCoolOffset){
   this->coolOffsetTemp = newCoolOffset;
   this->storeCoolTemperatureOffset();
 }
@@ -91,7 +102,7 @@ float BtsDriver::loadCoolTemperatureOffset(){
   return this->coolOffsetTemp;
 }
 
-void BtsDriver::changeHeatTemperatureOffset( float newHeatOffset){
+void BtsDriver::changeHeatTemperatureOffset(float newHeatOffset){
   this->heatOffsetTemp = newHeatOffset;
   this->storeHeatTemperatureOffset();
 }
@@ -102,6 +113,34 @@ float BtsDriver::loadHeatTemperatureOffset(){
   this->workingData.end();
   return this->heatOffsetTemp;
 }
+
+// PWM
+
+void BtsDriver::changeCoolPwm(uint8_t newCoolPwm){
+  this->coolPwm = newCoolPwm;
+  this->storeCoolPwm();
+}
+
+uint8_t BtsDriver::loadCoolPwm(){
+  this->workingData.begin(WORKING_DATA_NAMESPACE, true);
+  this->coolPwm = this->workingData.getFloat(LAST_COOL_PWM, DEFAULT_PWM);
+  this->workingData.end();
+  return this->coolPwm;
+}
+
+void BtsDriver::changeHeatPwm(uint8_t newHeatPwm){
+  this->heatPwm = newHeatPwm;
+  this->storeHeatPwm();
+}
+
+uint8_t BtsDriver::loadHeatPwm(){
+  this->workingData.begin(WORKING_DATA_NAMESPACE, true);
+  this->heatPwm = this->workingData.getFloat(LAST_HEAT_PWM, DEFAULT_PWM);
+  this->workingData.end();
+  return this->heatPwm;
+}
+
+//* PWM
 
 //PRIVATE
 void BtsDriver::storeFanHeatAuto(){
@@ -234,7 +273,9 @@ void BtsDriver::HeatOn(){
   this->generaliOn();
 
   ledcWrite(PWM_R, 0);
-  ledcWrite(PWM_L, this->maxOutputValue);
+  ledcWrite(PWM_L, this->maxOutputValue * this->heatPwm / 100);
+  Serial.print("INTERNAL: CooHeatCWrite: ");
+  Serial.println(this->maxOutputValue * this->heatPwm / 100);
   this->peltierState = true;
 }
 
@@ -244,9 +285,9 @@ void BtsDriver::ColdOn(){
   this->generaliOn();
   
   ledcWrite(PWM_L, 0);
-  ledcWrite(PWM_R, this->maxOutputValue);
-  Serial.print("INTERNAL: MaxVol: ");
-  Serial.println(this->maxOutputValue);
+  ledcWrite(PWM_R, this->maxOutputValue * this->coolPwm / 100);
+  Serial.print("INTERNAL: CoolCWrite: ");
+  Serial.println(this->maxOutputValue * this->coolPwm / 100);
   this->peltierState = true;
 }
 

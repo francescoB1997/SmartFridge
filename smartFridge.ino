@@ -45,11 +45,13 @@ void applyMode() {
 
 void setup() {
   uint8_t wifiTryCounter = 0;
-  //Serial.begin(115200);
+  Serial.begin(115200);
   btsModule.setAsOutputPin();
   btsModule.allOff();
   btsModule.loadCoolTemperatureOffset();
   btsModule.loadHeatTemperatureOffset();
+  btsModule.loadCoolPwm();
+  btsModule.loadHeatPwm();
   btsModule.loadFanCoolAuto();
   btsModule.loadFanHeatAuto();
   btsModule.loadFanHeatAutoTime();
@@ -190,6 +192,18 @@ void setup() {
       btsModule.changeHeatTemperatureOffset(newOffset);
     }
 
+    // PWM
+    if (msg.startsWith("COOL_PWM:")) {
+      uint8_t newPwm = msg.substring(9).toInt();
+      btsModule.changeCoolPwm(newPwm);
+    }
+
+    if (msg.startsWith("HEAT_PWM:")) {
+      uint8_t newPwm = msg.substring(9).toInt();
+      btsModule.changeHeatPwm(newPwm);
+    }
+    // *PWM
+
     if (msg.startsWith("FANHEAT_AUTO:ON")) {
       btsModule.changeFanHeatAuto(true);
     } else if (msg.startsWith("FANHEAT_AUTO:OFF")) {
@@ -234,6 +248,8 @@ void setup() {
     json += "\"set\":" + String(setTemp, 2) + ",";
     json += "\"coolOffset\":" + String(btsModule.coolOffsetTemp, 2) + ",";
     json += "\"heatOffset\":" + String(btsModule.heatOffsetTemp, 2) + ",";
+    json += "\"coolPwm\":" + String(btsModule.coolPwm) + ",";
+    json += "\"heatPwm\":" + String(btsModule.heatPwm) + ",";
     json += "\"auto\":" + String(autoMode ? "true" : "false") + ",";
     json += "\"peltier\":" + String(btsModule.getPeltierState() ? "true" : "false") + ",";
     json += "\"fan\":" + String(fanStateView ? "true" : "false") + ",";
@@ -421,6 +437,8 @@ void loop()
     }
     json += "\"coolOffset\":" + String(btsModule.coolOffsetTemp, 2) + ",";
     json += "\"heatOffset\":" + String(btsModule.heatOffsetTemp, 2) + ",";
+    json += "\"coolPwm\":" + String(btsModule.coolPwm) + ",";
+    json += "\"heatPwm\":" + String(btsModule.heatPwm) + ",";
     json += "\"set\":" + String(setTemp, 2) + ",";
     json += "\"auto\":" + String(autoMode ? "true" : "false") + ",";
     json += "\"peltier\":" + String(btsModule.getPeltierState() ? "true" : "false") + ",";

@@ -10,6 +10,7 @@
 
 #define DEFAULT_SET_TEMPERATURE 25.0
 #define DEFAULT_TEMPERATURE_OFFSET 0.5
+#define DEFAULT_PWM 100
 #define DEFAULT_FAN_AUTO false
 #define DEFAULT_FAN_AUTO_TIME 30
 #define DEFAULT_FAN_AUTO_INTERTIME 30
@@ -23,6 +24,8 @@
 #define LAST_AUTO_MODE "lastAutoMode"
 #define LAST_TEMP_COOL_OFFSET "lastTCO"
 #define LAST_TEMP_HEAT_OFFSET "lastTHO"
+#define LAST_COOL_PWM "lastCP"
+#define LAST_HEAT_PWM "lastHP"
 #define LAST_FAN_HEAT_AUTO "lastFHA"
 #define LAST_FAN_COOL_AUTO "lastFCA"
 #define LAST_FAN_HEAT_TIME_AUTO "lastFHTA"
@@ -47,6 +50,8 @@ class BtsDriver{
     void storeSetTemp();
     void storeHeatTemperatureOffset();
     void storeCoolTemperatureOffset();
+    void storeHeatPwm();
+    void storeCoolPwm();
     void storeFanHeatAuto();
     void storeFanCoolAuto();
     void storeFanHeatAutoTime();
@@ -58,6 +63,8 @@ class BtsDriver{
   public:
     float heatOffsetTemp;
     float coolOffsetTemp;
+    uint8_t heatPwm;
+    uint8_t coolPwm;
     bool fanHeatAuto;
     bool fanCoolAuto;
     unsigned long fanHeatAutoTime;
@@ -98,6 +105,11 @@ class BtsDriver{
     float loadHeatTemperatureOffset();
     void changeCoolTemperatureOffset(float);
     float loadCoolTemperatureOffset();
+
+    void changeHeatPwm(uint8_t);
+    uint8_t loadHeatPwm();
+    void changeCoolPwm(uint8_t);
+    uint8_t loadCoolPwm();
 
     void changeFanHeatAuto(bool);
     bool loadFanHeatAuto();
