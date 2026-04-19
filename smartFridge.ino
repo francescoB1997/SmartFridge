@@ -45,7 +45,7 @@ void applyMode() {
 
 void setup() {
   uint8_t wifiTryCounter = 0;
-  Serial.begin(115200);
+  //Serial.begin(115200);
   btsModule.setAsOutputPin();
   btsModule.allOff();
   btsModule.loadCoolTemperatureOffset();
@@ -62,16 +62,16 @@ void setup() {
   ArduinoOTA.setPassword("69860");
   ArduinoOTA
   .onStart([]() {
-    //Serial.println("OTA: Start");
+    ////Serial.println("OTA: Start");
   })
   .onEnd([]() {
-    //Serial.println("\nOTA: End");
+    ////Serial.println("\nOTA: End");
   })
   .onProgress([](unsigned int progress, unsigned int total) {
-    //Serial.printf("Progress: %u%%\r", (progress * 100) / total);
+    ////Serial.printf("Progress: %u%%\r", (progress * 100) / total);
   })
   .onError([](ota_error_t error) {
-    //Serial.printf("Error[%u]\n", error);
+    ////Serial.printf("Error[%u]\n", error);
   });
 
   
@@ -121,7 +121,7 @@ void setup() {
   sensors.begin();  
 
   wsHandler.onConnect([](AsyncWebSocket *server, AsyncWebSocketClient *client) {
-    //Serial.printf("Client %" PRIu32 " connected\n", client->id());
+    ////Serial.printf("Client %" PRIu32 " connected\n", client->id());
 
     // manda stato iniziale
     String json = "{";
@@ -273,11 +273,11 @@ void loop()
     }
     else {
       if (autoMode) {
-        Serial.println("# AUTO MODE ON");
+        //Serial.println("# AUTO MODE ON");
         switch(workingMode){
           case CALDO:
-              Serial.print("* CASE CALDO. Heat Offset: ");
-              Serial.println(btsModule.heatOffsetTemp);
+              //Serial.print("* CASE CALDO. Heat Offset: ");
+              //Serial.println(btsModule.heatOffsetTemp);
               if (currentTemp < (setTemp - btsModule.heatOffsetTemp) ) {
                 if (btsModule.getFanState()) {
                   btsModule.setFanOff();
@@ -292,29 +292,29 @@ void loop()
                 }                
             break;
           case FREDDO:
-              Serial.print("* CASE FREDDO. Cool Offset: ");
-              Serial.println(btsModule.coolOffsetTemp);
+              //Serial.print("* CASE FREDDO. Cool Offset: ");
+              //Serial.println(btsModule.coolOffsetTemp);
               if (currentTemp > (setTemp + btsModule.coolOffsetTemp) ) {
                 if (btsModule.getFanState()) {
                   btsModule.setFanOff();
                   btsModule.allOff();
                 }
-                Serial.println("** (currentTemp > (setTemp + btsModule.offsetTemp)");
+                //Serial.println("** (currentTemp > (setTemp + btsModule.offsetTemp)");
                 fanStateView = true; // Fai vedere la ventola che gira (il relè della massa è attivo)
                 btsModule.ColdOn();
                 btsModule.generaliOn();
-                Serial.println("** ColdOn() e generaliOn()");
+                //Serial.println("** ColdOn() e generaliOn()");
               } else if (currentTemp <= setTemp) {
-                Serial.println("** (currentTemp <= setTemp)");
+                //Serial.println("** (currentTemp <= setTemp)");
                 if (btsModule.getPeltierState())
                 {
-                  Serial.println("*** getPeltierState è true --> allOff()");
+                  //Serial.println("*** getPeltierState è true --> allOff()");
                   btsModule.allOff();
                 }
-              } else {Serial.println("** limbo");}
+              }
             break;
           case OFF:
-              //Serial.println("CASE OFF");
+              ////Serial.println("CASE OFF");
               btsModule.allOff();
               break;
           default:
@@ -322,18 +322,18 @@ void loop()
         }
       }
       else{
-        Serial.println("# AUTO MODE OFF");
+        //Serial.println("# AUTO MODE OFF");
         if (btsModule.getFanState() || fanStateView)
         {
           if (btsModule.getFanState())
-            Serial.println("## btsModule.getFanState() è true");
+            //Serial.println("## btsModule.getFanState() è true");
           if (fanStateView)
-            Serial.println("## fanStateView è true");
+            //Serial.println("## fanStateView è true");
           if (btsModule.getPeltierState()) {
-            Serial.println("### btsModule.getPeltierState() è true --> allOff()");
+            //Serial.println("### btsModule.getPeltierState() è true --> allOff()");
             btsModule.allOff();
           }
-          Serial.println("## setFanOn() e || generaleGroundOn()");
+          //Serial.println("## setFanOn() e || generaleGroundOn()");
           btsModule.setFanOn();
           btsModule.generaleGroundOn();
         }
@@ -349,7 +349,7 @@ void loop()
     {
       if ((!btsModule.getPeltierState()) && (btsModule.fanCoolAuto) && ( (!autoMode) || (currentTemp <= (setTemp + btsModule.coolOffsetTemp))) )
       {
-        Serial.println("Ventola attivabile. Check time");
+        //Serial.println("Ventola attivabile. Check time");
         if (btsModule.getFanState() || ((millis() - fanInterTime) > (btsModule.fanCoolAutoInterTime * 1000)))
         {
           if ((millis() - fanTime) > (btsModule.fanCoolAutoTime * 1000)) 
