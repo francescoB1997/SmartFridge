@@ -479,6 +479,9 @@ document.addEventListener("DOMContentLoaded", function() {
 <body>
 <div class="card">
   <h2>MiniFrigo Lievito Madre</h2>
+  <div style="font-size:12px; color:#777; margin-top:-8px; margin-bottom:10px;">
+    Firmware v2.0.0
+  </div>
 
 <!-- TAB HEADER -->
 <div class="tabs">
