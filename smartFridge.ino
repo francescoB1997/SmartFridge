@@ -35,8 +35,8 @@ unsigned long fanTime = 0;
 void applyMode() {
   if (mode == "OFF")
     relayModule.allOffWithStore();
-  else if (mode == "COOL") {
-    relayModule.changeMode(COLD);
+  else if (mode == "FREDDO") {
+    relayModule.changeMode(FREDDO);
   } else if (mode == "HEAT") {
     relayModule.changeMode(HEAT);
   }
@@ -112,8 +112,8 @@ void setup() {
     mode = "OFF";
   else if (workingMode == HEAT)
     mode = "HEAT";
-  else if (workingMode == COLD)
-    mode = "COOL";
+  else if (workingMode == FREDDO)
+    mode = "FREDDO";
 
   autoMode = relayModule.loadAutoMode();
   setTemp = relayModule.loadSetTemp();
@@ -164,8 +164,8 @@ void setup() {
       relayModule.changeSetTemp(setTemp);
     }
 
-    if (msg == "MODE:COOL") {
-      mode = "COOL";
+    if (msg == "MODE:FREDDO") {
+      mode = "FREDDO";
     } else if (msg == "MODE:HEAT") {
       mode = "HEAT";
     }
@@ -283,8 +283,8 @@ void loop()
                     relayModule.allOff();
                 }                
             break;
-          case COLD:
-              Serial.println("* CASE COLD");
+          case FREDDO:
+              Serial.println("* CASE FREDDO");
               if (currentTemp > (setTemp + relayModule.offsetTemp) ) {
                 if (relayModule.getFanState()) {
                   relayModule.setFanOff();
@@ -336,7 +336,7 @@ void loop()
       //}
     }
 
-    if (workingMode == COLD) 
+    if (workingMode == FREDDO) 
     {
       if ((!relayModule.getPeltierState()) && (relayModule.fanCoolAuto) && ( (!autoMode) || (currentTemp <= (setTemp + relayModule.offsetTemp))) )
       {

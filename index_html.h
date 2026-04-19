@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   document.querySelector(".cool").addEventListener("click", function() {
-    ws.send("MODE:COOL");
+    ws.send("MODE:FREDDO");
   });
 
   document.querySelector(".heat").addEventListener("click", function() {
