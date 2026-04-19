@@ -4,9 +4,8 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <ArduinoOTA.h>
-#include "releDriver.h"
 #include "wifiData.h"
-#include "releDriver.h"
+#include "btsDriver.h"
 #include "index_html.h"
 
 #define ONE_WIRE_BUS 4
@@ -18,7 +17,7 @@ static AsyncWebSocketMessageHandler wsHandler;
 static AsyncWebSocket ws("/ws", wsHandler.eventHandler());
 
 WifiData wifiData;
-ReleDriver relayModule = ReleDriver(DEFAULT_LEDC_RESOLUTION);
+BtsDriver btsModule = BtsDriver(DEFAULT_LEDC_RESOLUTION);
 mode workingMode;
 volatile bool autoMode;
 
@@ -34,29 +33,29 @@ unsigned long fanTime = 0;
 
 void applyMode() {
   if (mode == "OFF")
-    relayModule.allOffWithStore();
+    btsModule.allOffWithStore();
   else if (mode == "FREDDO") {
-    relayModule.changeMode(FREDDO);
+    btsModule.changeMode(FREDDO);
   } else if (mode == "CALDO") {
-    relayModule.changeMode(CALDO);
+    btsModule.changeMode(CALDO);
   }
   
-  workingMode = relayModule.getState();
+  workingMode = btsModule.getState();
 }
 
 void setup() {
   uint8_t wifiTryCounter = 0;
   Serial.begin(115200);
-  relayModule.setAsOutputPin();
-  relayModule.allOff();
-  relayModule.loadCoolTemperatureOffset();
-  relayModule.loadHeatTemperatureOffset();
-  relayModule.loadFanCoolAuto();
-  relayModule.loadFanHeatAuto();
-  relayModule.loadFanHeatAutoTime();
-  relayModule.loadFanCoolAutoTime();
-  relayModule.loadFanHeatAutoInterTime();
-  relayModule.loadFanCoolAutoInterTime();
+  btsModule.setAsOutputPin();
+  btsModule.allOff();
+  btsModule.loadCoolTemperatureOffset();
+  btsModule.loadHeatTemperatureOffset();
+  btsModule.loadFanCoolAuto();
+  btsModule.loadFanHeatAuto();
+  btsModule.loadFanHeatAutoTime();
+  btsModule.loadFanCoolAutoTime();
+  btsModule.loadFanHeatAutoInterTime();
+  btsModule.loadFanCoolAutoInterTime();
   delay(1000);
 
   ArduinoOTA.setHostname("miniFrigo");
@@ -108,7 +107,7 @@ void setup() {
       ArduinoOTA.begin();
   }
 
-  workingMode = relayModule.loadStoredState();
+  workingMode = btsModule.loadStoredState();
   if (workingMode == OFF)
     mode = "OFF";
   else if (workingMode == CALDO)
@@ -116,8 +115,8 @@ void setup() {
   else if (workingMode == FREDDO)
     mode = "FREDDO";
 
-  autoMode = relayModule.loadAutoMode();
-  setTemp = relayModule.loadSetTemp();
+  autoMode = btsModule.loadAutoMode();
+  setTemp = btsModule.loadSetTemp();
 
   sensors.begin();  
 
@@ -131,16 +130,16 @@ void setup() {
     } else {
       json += "\"temp\":" + String(currentTemp, 2) + ",";
     }
-    json += "\"coolOffset\":" + String(relayModule.coolOffsetTemp, 2) + ",";
-    json += "\"heatOffset\":" + String(relayModule.heatOffsetTemp, 2) + ",";
+    json += "\"coolOffset\":" + String(btsModule.coolOffsetTemp, 2) + ",";
+    json += "\"heatOffset\":" + String(btsModule.heatOffsetTemp, 2) + ",";
     json += "\"set\":" + String(setTemp, 2) + ",";
     json += "\"auto\":" + String(autoMode ? "true" : "false") + ",";
-    json += "\"fanHeatAuto\":" + String(relayModule.fanHeatAuto ? "true" : "false") + ",";
-    json += "\"fanCoolAuto\":" + String(relayModule.fanCoolAuto ? "true" : "false") + ",";
-    json += "\"fanCoolTime\":" + String(relayModule.fanCoolAutoTime) + ",";
-    json += "\"fanHeatTime\":" + String(relayModule.fanHeatAutoTime) + ",";
-    json += "\"fanCoolInterTime\":" + String(relayModule.fanCoolAutoInterTime) + ",";
-    json += "\"fanHeatInterTime\":" + String(relayModule.fanHeatAutoInterTime) + ",";
+    json += "\"fanHeatAuto\":" + String(btsModule.fanHeatAuto ? "true" : "false") + ",";
+    json += "\"fanCoolAuto\":" + String(btsModule.fanCoolAuto ? "true" : "false") + ",";
+    json += "\"fanCoolTime\":" + String(btsModule.fanCoolAutoTime) + ",";
+    json += "\"fanHeatTime\":" + String(btsModule.fanHeatAutoTime) + ",";
+    json += "\"fanCoolInterTime\":" + String(btsModule.fanCoolAutoInterTime) + ",";
+    json += "\"fanHeatInterTime\":" + String(btsModule.fanHeatAutoInterTime) + ",";
     json += "\"mode\":\"" + mode + "\"";
     json += "}";
 
@@ -163,7 +162,7 @@ void setup() {
 
     if (msg.startsWith("SET:")) {
       setTemp = msg.substring(4).toFloat();
-      relayModule.changeSetTemp(setTemp);
+      btsModule.changeSetTemp(setTemp);
     }
 
     if (msg == "MODE:FREDDO") {
@@ -173,54 +172,54 @@ void setup() {
     }
 
     if (msg == "AUTO:ON") {
-      relayModule.changeAutoMode(true);
-      autoMode = relayModule.getAutoMode();
+      btsModule.changeAutoMode(true);
+      autoMode = btsModule.getAutoMode();
     }
     else if (msg == "AUTO:OFF") {
-      relayModule.changeAutoMode(false);
-      autoMode = relayModule.getAutoMode();
+      btsModule.changeAutoMode(false);
+      autoMode = btsModule.getAutoMode();
     }
 
     if (msg.startsWith("COOL_OFFSET:")) {
       float newOffset = msg.substring(12).toFloat();
-      relayModule.changeCoolTemperatureOffset(newOffset);
+      btsModule.changeCoolTemperatureOffset(newOffset);
     }
 
     if (msg.startsWith("HEAT_OFFSET:")) {
       float newOffset = msg.substring(12).toFloat();
-      relayModule.changeHeatTemperatureOffset(newOffset);
+      btsModule.changeHeatTemperatureOffset(newOffset);
     }
 
     if (msg.startsWith("FANHEAT_AUTO:ON")) {
-      relayModule.changeFanHeatAuto(true);
+      btsModule.changeFanHeatAuto(true);
     } else if (msg.startsWith("FANHEAT_AUTO:OFF")) {
-      relayModule.changeFanHeatAuto(false);
+      btsModule.changeFanHeatAuto(false);
     }
 
     if (msg.startsWith("FANCOOL_AUTO:ON")) {
-      relayModule.changeFanCoolAuto(true);
+      btsModule.changeFanCoolAuto(true);
     } else if (msg.startsWith("FANCOOL_AUTO:OFF")) {
-      relayModule.changeFanCoolAuto(false);
+      btsModule.changeFanCoolAuto(false);
     }
 
     if (msg.startsWith("FANCOOL_TIME:")) {
       unsigned long newFanCoolTime = msg.substring(13).toInt();
-      relayModule.changeFanCoolAutoTime(newFanCoolTime);
+      btsModule.changeFanCoolAutoTime(newFanCoolTime);
     }
 
     if (msg.startsWith("FANHEAT_TIME:")) {
       unsigned long newFanHeatTime = msg.substring(13).toInt();
-      relayModule.changeFanHeatAutoTime(newFanHeatTime);
+      btsModule.changeFanHeatAutoTime(newFanHeatTime);
     }
 
     if (msg.startsWith("FANCOOL_INTERTIME:")) {
       unsigned long newFanCoolnterTime = msg.substring(18).toInt();
-      relayModule.changeFanCoolAutoInterTime(newFanCoolnterTime);
+      btsModule.changeFanCoolAutoInterTime(newFanCoolnterTime);
     }
 
     if (msg.startsWith("FANHEAT_INTERTIME:")) {
       unsigned long newFanHeatInterTime = msg.substring(18).toInt();
-      relayModule.changeFanHeatAutoInterTime(newFanHeatInterTime);
+      btsModule.changeFanHeatAutoInterTime(newFanHeatInterTime);
     }
     
     applyMode();
@@ -233,17 +232,17 @@ void setup() {
       json += "\"temp\":" + String(currentTemp, 2) + ",";
     }
     json += "\"set\":" + String(setTemp, 2) + ",";
-    json += "\"coolOffset\":" + String(relayModule.coolOffsetTemp, 2) + ",";
-    json += "\"heatOffset\":" + String(relayModule.heatOffsetTemp, 2) + ",";
+    json += "\"coolOffset\":" + String(btsModule.coolOffsetTemp, 2) + ",";
+    json += "\"heatOffset\":" + String(btsModule.heatOffsetTemp, 2) + ",";
     json += "\"auto\":" + String(autoMode ? "true" : "false") + ",";
-    json += "\"peltier\":" + String(relayModule.getPeltierState() ? "true" : "false") + ",";
+    json += "\"peltier\":" + String(btsModule.getPeltierState() ? "true" : "false") + ",";
     json += "\"fan\":" + String(fanStateView ? "true" : "false") + ",";
-    json += "\"fanHeatAuto\":" + String(relayModule.fanHeatAuto ? "true" : "false") + ",";
-    json += "\"fanCoolAuto\":" + String(relayModule.fanCoolAuto ? "true" : "false") + ",";
-    json += "\"fanCoolTime\":" + String(relayModule.fanCoolAutoTime) + ",";
-    json += "\"fanHeatTime\":" + String(relayModule.fanHeatAutoTime) + ",";
-    json += "\"fanCoolInterTime\":" + String(relayModule.fanCoolAutoInterTime) + ",";
-    json += "\"fanHeatInterTime\":" + String(relayModule.fanHeatAutoInterTime) + ",";
+    json += "\"fanHeatAuto\":" + String(btsModule.fanHeatAuto ? "true" : "false") + ",";
+    json += "\"fanCoolAuto\":" + String(btsModule.fanCoolAuto ? "true" : "false") + ",";
+    json += "\"fanCoolTime\":" + String(btsModule.fanCoolAutoTime) + ",";
+    json += "\"fanHeatTime\":" + String(btsModule.fanHeatAutoTime) + ",";
+    json += "\"fanCoolInterTime\":" + String(btsModule.fanCoolAutoInterTime) + ",";
+    json += "\"fanHeatInterTime\":" + String(btsModule.fanHeatAutoInterTime) + ",";
     json += "\"mode\":\"" + mode + "\"";
     json += "}";
     server->textAll(json);
@@ -270,7 +269,7 @@ void loop()
 
     if (currentTemp < -20) {
       sensors.begin();
-      relayModule.allOff();
+      btsModule.allOff();
     }
     else {
       if (autoMode) {
@@ -278,45 +277,45 @@ void loop()
         switch(workingMode){
           case CALDO:
               Serial.print("* CASE CALDO. Heat Offset: ");
-              Serial.println(relayModule.heatOffsetTemp);
-              if (currentTemp < (setTemp - relayModule.heatOffsetTemp) ) {
-                if (relayModule.getFanState()) {
-                  relayModule.setFanOff();
-                  relayModule.allOff();
+              Serial.println(btsModule.heatOffsetTemp);
+              if (currentTemp < (setTemp - btsModule.heatOffsetTemp) ) {
+                if (btsModule.getFanState()) {
+                  btsModule.setFanOff();
+                  btsModule.allOff();
                 }
                 fanStateView = true; // Fai vedere che gira (il relè della massa è spento, visto che si è in HEAT)
-                relayModule.HeatOn();
-                relayModule.generaliOn();
+                btsModule.HeatOn();
+                btsModule.generaliOn();
               } else if (currentTemp >= setTemp) {
-                  if (relayModule.getPeltierState())
-                    relayModule.allOff();
+                  if (btsModule.getPeltierState())
+                    btsModule.allOff();
                 }                
             break;
           case FREDDO:
               Serial.print("* CASE FREDDO. Cool Offset: ");
-              Serial.println(relayModule.coolOffsetTemp);
-              if (currentTemp > (setTemp + relayModule.coolOffsetTemp) ) {
-                if (relayModule.getFanState()) {
-                  relayModule.setFanOff();
-                  relayModule.allOff();
+              Serial.println(btsModule.coolOffsetTemp);
+              if (currentTemp > (setTemp + btsModule.coolOffsetTemp) ) {
+                if (btsModule.getFanState()) {
+                  btsModule.setFanOff();
+                  btsModule.allOff();
                 }
-                Serial.println("** (currentTemp > (setTemp + relayModule.offsetTemp)");
+                Serial.println("** (currentTemp > (setTemp + btsModule.offsetTemp)");
                 fanStateView = true; // Fai vedere la ventola che gira (il relè della massa è attivo)
-                relayModule.ColdOn();
-                relayModule.generaliOn();
+                btsModule.ColdOn();
+                btsModule.generaliOn();
                 Serial.println("** ColdOn() e generaliOn()");
               } else if (currentTemp <= setTemp) {
                 Serial.println("** (currentTemp <= setTemp)");
-                if (relayModule.getPeltierState())
+                if (btsModule.getPeltierState())
                 {
                   Serial.println("*** getPeltierState è true --> allOff()");
-                  relayModule.allOff();
+                  btsModule.allOff();
                 }
               } else {Serial.println("** limbo");}
             break;
           case OFF:
               //Serial.println("CASE OFF");
-              relayModule.allOff();
+              btsModule.allOff();
               break;
           default:
             break;
@@ -324,79 +323,79 @@ void loop()
       }
       else{
         Serial.println("# AUTO MODE OFF");
-        if (relayModule.getFanState() || fanStateView)
+        if (btsModule.getFanState() || fanStateView)
         {
-          if (relayModule.getFanState())
-            Serial.println("## relayModule.getFanState() è true");
+          if (btsModule.getFanState())
+            Serial.println("## btsModule.getFanState() è true");
           if (fanStateView)
             Serial.println("## fanStateView è true");
-          if (relayModule.getPeltierState()) {
-            Serial.println("### relayModule.getPeltierState() è true --> allOff()");
-            relayModule.allOff();
+          if (btsModule.getPeltierState()) {
+            Serial.println("### btsModule.getPeltierState() è true --> allOff()");
+            btsModule.allOff();
           }
           Serial.println("## setFanOn() e || generaleGroundOn()");
-          relayModule.setFanOn();
-          relayModule.generaleGroundOn();
+          btsModule.setFanOn();
+          btsModule.generaleGroundOn();
         }
         else
-          relayModule.allOff();
+          btsModule.allOff();
       }
       //else {
-      //  relayModule.allOff();
+      //  btsModule.allOff();
       //}
     }
 
     if (workingMode == FREDDO) 
     {
-      if ((!relayModule.getPeltierState()) && (relayModule.fanCoolAuto) && ( (!autoMode) || (currentTemp <= (setTemp + relayModule.coolOffsetTemp))) )
+      if ((!btsModule.getPeltierState()) && (btsModule.fanCoolAuto) && ( (!autoMode) || (currentTemp <= (setTemp + btsModule.coolOffsetTemp))) )
       {
         Serial.println("Ventola attivabile. Check time");
-        if (relayModule.getFanState() || ((millis() - fanInterTime) > (relayModule.fanCoolAutoInterTime * 1000)))
+        if (btsModule.getFanState() || ((millis() - fanInterTime) > (btsModule.fanCoolAutoInterTime * 1000)))
         {
-          if ((millis() - fanTime) > (relayModule.fanCoolAutoTime * 1000)) 
+          if ((millis() - fanTime) > (btsModule.fanCoolAutoTime * 1000)) 
           {
-            if (!relayModule.getFanState())
+            if (!btsModule.getFanState())
             {
-              relayModule.setFanOn();
-              relayModule.generaleGroundOn();
+              btsModule.setFanOn();
+              btsModule.generaleGroundOn();
             } else {
-              relayModule.setFanOff();
-              relayModule.generaleGroundOff();
+              btsModule.setFanOff();
+              btsModule.generaleGroundOff();
             }
-            fanStateView = relayModule.getFanState(); 
+            fanStateView = btsModule.getFanState(); 
             fanTime = millis();
           }
           fanInterTime = millis();
         }
       } else {
-        if (!relayModule.getPeltierState())
+        if (!btsModule.getPeltierState())
         {
-          relayModule.generaleGroundOff();
-          relayModule.setFanOff();
+          btsModule.generaleGroundOff();
+          btsModule.setFanOff();
           fanStateView = false;
         }
-        //fanInterTime = millis() - (relayModule.fanCoolAutoInterTime * 1000);
-        //fanTime = millis() - (relayModule.fanCoolAutoTime * 1000);
+        //fanInterTime = millis() - (btsModule.fanCoolAutoInterTime * 1000);
+        //fanTime = millis() - (btsModule.fanCoolAutoTime * 1000);
         fanInterTime = fanTime = 0;
         //fanInterTime = 0; // Permette alla ri-attivazione della AUTO-FAN, di attivare subito la ventola
       }
     }
     else if (workingMode == CALDO) {
-      if ((!relayModule.getPeltierState()) && (relayModule.fanHeatAuto) && ((!autoMode) || (currentTemp >= (setTemp - relayModule.heatOffsetTemp))) )
+      if ((!btsModule.getPeltierState()) && (btsModule.fanHeatAuto) && ((!autoMode) || (currentTemp >= (setTemp - btsModule.heatOffsetTemp))) )
       {
-          if (relayModule.getFanState() || ((millis() - fanInterTime) > (relayModule.fanHeatAutoInterTime * 1000)))
+          if (btsModule.getFanState() || ((millis() - fanInterTime) > (btsModule.fanHeatAutoInterTime * 1000)))
           {
-              if ((millis() - fanTime) > (relayModule.fanHeatAutoTime * 1000)) 
+              if ((millis() - fanTime) > (btsModule.fanHeatAutoTime * 1000)) 
               {
-                  if (!relayModule.getFanState())
+                  if (!btsModule.getFanState())
                   {
-                      relayModule.setFanOn();
-                      relayModule.generaleGroundOn();
+                      btsModule.setFanOn();
+                      btsModule.generaleGroundOn();
                   } else {
-                      relayModule.setFanOff();
-                      relayModule.generaleGroundOff();
+                      btsModule.setFanOff();
+                      btsModule.generaleGroundOff();
                   }
-                  fanStateView = relayModule.getFanState(); 
+                  fanStateView = btsModule.getFanState(); 
                   fanTime = millis();
               }
               fanInterTime = millis();
@@ -404,10 +403,10 @@ void loop()
       } 
       else 
       {
-          if (!relayModule.getPeltierState())
+          if (!btsModule.getPeltierState())
           {
-              relayModule.generaleGroundOff();
-              relayModule.setFanOff();
+              btsModule.generaleGroundOff();
+              btsModule.setFanOff();
               fanStateView = false;
           }
           fanInterTime = fanTime = 0; // Permette riattivazione immediata
@@ -422,18 +421,18 @@ void loop()
     } else {
       json += "\"temp\":" + String(currentTemp, 2) + ",";
     }
-    json += "\"coolOffset\":" + String(relayModule.coolOffsetTemp, 2) + ",";
-    json += "\"heatOffset\":" + String(relayModule.heatOffsetTemp, 2) + ",";
+    json += "\"coolOffset\":" + String(btsModule.coolOffsetTemp, 2) + ",";
+    json += "\"heatOffset\":" + String(btsModule.heatOffsetTemp, 2) + ",";
     json += "\"set\":" + String(setTemp, 2) + ",";
     json += "\"auto\":" + String(autoMode ? "true" : "false") + ",";
-    json += "\"peltier\":" + String(relayModule.getPeltierState() ? "true" : "false") + ",";
+    json += "\"peltier\":" + String(btsModule.getPeltierState() ? "true" : "false") + ",";
     json += "\"fan\":" + String(fanStateView ? "true" : "false") + ",";
-    json += "\"fanHeatAuto\":" + String(relayModule.fanHeatAuto ? "true" : "false") + ",";
-    json += "\"fanCoolAuto\":" + String(relayModule.fanCoolAuto ? "true" : "false") + ",";
-    json += "\"fanCoolTime\":" + String(relayModule.fanCoolAutoTime) + ",";
-    json += "\"fanHeatTime\":" + String(relayModule.fanHeatAutoTime) + ",";
-    json += "\"fanCoolInterTime\":" + String(relayModule.fanCoolAutoInterTime) + ",";
-    json += "\"fanHeatInterTime\":" + String(relayModule.fanHeatAutoInterTime) + ",";
+    json += "\"fanHeatAuto\":" + String(btsModule.fanHeatAuto ? "true" : "false") + ",";
+    json += "\"fanCoolAuto\":" + String(btsModule.fanCoolAuto ? "true" : "false") + ",";
+    json += "\"fanCoolTime\":" + String(btsModule.fanCoolAutoTime) + ",";
+    json += "\"fanHeatTime\":" + String(btsModule.fanHeatAutoTime) + ",";
+    json += "\"fanCoolInterTime\":" + String(btsModule.fanCoolAutoInterTime) + ",";
+    json += "\"fanHeatInterTime\":" + String(btsModule.fanHeatAutoInterTime) + ",";
     json += "\"mode\":\"" + mode + "\"";
     json += "}";
 

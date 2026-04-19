@@ -1,5 +1,5 @@
-#ifndef releDriver_h
-#define releDriver_h
+#ifndef btsDriver_h
+#define btsDriver_h
 
 #include <Preferences.h>
 
@@ -33,7 +33,7 @@
 
 enum mode{OFF, CALDO, FREDDO};
 
-class ReleDriver{
+class BtsDriver{
   private:
     uint32_t maxOutputValue;
     mode state;
@@ -64,7 +64,7 @@ class ReleDriver{
     unsigned long fanCoolAutoTime;
     unsigned long fanHeatAutoInterTime;
     unsigned long fanCoolAutoInterTime;
-    ReleDriver(uint8_t);
+    BtsDriver(uint8_t);
 
     void setAsOutputPin();
     void allOff();
@@ -76,7 +76,7 @@ class ReleDriver{
     void HeatOff();
     void ColdOff();
     void ColdOn();
-    bool getGeneraliRelayState();
+    bool getENPinState();
 
     mode getState();
     mode loadStoredState();
