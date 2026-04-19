@@ -18,7 +18,7 @@ static AsyncWebSocketMessageHandler wsHandler;
 static AsyncWebSocket ws("/ws", wsHandler.eventHandler());
 
 WifiData wifiData;
-ReleDriver relayModule;
+ReleDriver relayModule = ReleDriver(DEFAULT_LEDC_RESOLUTION);
 mode workingMode;
 volatile bool autoMode;
 
@@ -46,7 +46,7 @@ void applyMode() {
 
 void setup() {
   uint8_t wifiTryCounter = 0;
-  //Serial.begin(115200);
+  Serial.begin(115200);
   relayModule.setAsOutputPin();
   relayModule.allOff();
   relayModule.loadTemperatureOffset();
@@ -216,11 +216,9 @@ void setup() {
       relayModule.changeFanHeatAutoInterTime(newFanHeatInterTime);
     }
     
-    
-
     applyMode();
 
-    // notifica tutti
+    // Notifica tutto
     String json = "{";
     if (currentTemp < -20) {
       json += "\"temp\":\"--\",";
@@ -268,36 +266,43 @@ void loop()
     }
     else {
       if (autoMode) {
+        Serial.println("# AUTO MODE ON");
         switch(workingMode){
           case HEAT:
-              //Serial.println("CASE HEAT");
+              Serial.println("* CASE HEAT");
               if (currentTemp < (setTemp - relayModule.offsetTemp) ) {
                 if (relayModule.getFanState()) {
                   relayModule.setFanOff();
                   relayModule.allOff();
                 }
                 fanStateView = true; // Fai vedere che gira (il relè della massa è spento, visto che si è in HEAT)
-                relayModule.relayHeatOn();
+                relayModule.HeatOn();
                 relayModule.generaliOn();
               } else if (currentTemp >= setTemp) {
-                  if (relayModule.getGeneraliRelayState())
+                  if (relayModule.getPeltierState())
                     relayModule.allOff();
                 }                
             break;
           case COLD:
-              //Serial.println("CASE COLD");
+              Serial.println("* CASE COLD");
               if (currentTemp > (setTemp + relayModule.offsetTemp) ) {
                 if (relayModule.getFanState()) {
                   relayModule.setFanOff();
                   relayModule.allOff();
                 }
+                Serial.println("** (currentTemp > (setTemp + relayModule.offsetTemp)");
                 fanStateView = true; // Fai vedere la ventola che gira (il relè della massa è attivo)
-                relayModule.relayColdOn();
+                relayModule.ColdOn();
                 relayModule.generaliOn();
+                Serial.println("** ColdOn() e generaliOn()");
               } else if (currentTemp <= setTemp) {
-                if (relayModule.getGeneraliRelayState())
+                Serial.println("** (currentTemp <= setTemp)");
+                if (relayModule.getPeltierState())
+                {
+                  Serial.println("*** getPeltierState è true --> allOff()");
                   relayModule.allOff();
-              }
+                }
+              } else {Serial.println("** limbo");}
             break;
           case OFF:
               //Serial.println("CASE OFF");
@@ -308,11 +313,18 @@ void loop()
         }
       }
       else{
+        Serial.println("# AUTO MODE OFF");
         if (relayModule.getFanState() || fanStateView)
         {
+          if (relayModule.getFanState())
+            Serial.println("## relayModule.getFanState() è true");
+          if (fanStateView)
+            Serial.println("## fanStateView è true");
           if (relayModule.getPeltierState()) {
+            Serial.println("### relayModule.getPeltierState() è true --> allOff()");
             relayModule.allOff();
           }
+          Serial.println("## setFanOn() e || generaleGroundOn()");
           relayModule.setFanOn();
           relayModule.generaleGroundOn();
         }
@@ -328,6 +340,7 @@ void loop()
     {
       if ((!relayModule.getPeltierState()) && (relayModule.fanCoolAuto) && ( (!autoMode) || (currentTemp <= (setTemp + relayModule.offsetTemp))) )
       {
+        Serial.println("Ventola attivabile. Check time");
         if (relayModule.getFanState() || ((millis() - fanInterTime) > (relayModule.fanCoolAutoInterTime * 1000)))
         {
           if ((millis() - fanTime) > (relayModule.fanCoolAutoTime * 1000)) 
