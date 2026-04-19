@@ -45,7 +45,7 @@ void applyMode() {
 
 void setup() {
   uint8_t wifiTryCounter = 0;
-  Serial.begin(115200);
+  //Serial.begin(115200);
   btsModule.setAsOutputPin();
   btsModule.allOff();
   btsModule.loadCoolTemperatureOffset();

@@ -274,8 +274,8 @@ void BtsDriver::HeatOn(){
 
   ledcWrite(PWM_R, 0);
   ledcWrite(PWM_L, this->maxOutputValue * this->heatPwm / 100);
-  Serial.print("INTERNAL: CooHeatCWrite: ");
-  Serial.println(this->maxOutputValue * this->heatPwm / 100);
+  //Serial.print("INTERNAL: CooHeatCWrite: ");
+  //Serial.println(this->maxOutputValue * this->heatPwm / 100);
   this->peltierState = true;
 }
 
@@ -286,8 +286,8 @@ void BtsDriver::ColdOn(){
   
   ledcWrite(PWM_L, 0);
   ledcWrite(PWM_R, this->maxOutputValue * this->coolPwm / 100);
-  Serial.print("INTERNAL: CoolCWrite: ");
-  Serial.println(this->maxOutputValue * this->coolPwm / 100);
+  //Serial.print("INTERNAL: CoolCWrite: ");
+  //Serial.println(this->maxOutputValue * this->coolPwm / 100);
   this->peltierState = true;
 }
 
