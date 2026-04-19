@@ -412,8 +412,6 @@ void loop()
           fanInterTime = fanTime = 0; // Permette riattivazione immediata
       }
     }
-    //Da testare e caricare nell'ESP. Adesso non lo faccio perchè non avrei tempo di smontarlo e caricare
-    //il codide ' da usb se è sbagliato.
 
     String json = "{";
     if (currentTemp < -20) {
