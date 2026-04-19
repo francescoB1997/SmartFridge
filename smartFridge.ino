@@ -30,6 +30,7 @@ bool fanStateView = false;
 unsigned long temperatureReadingTime = 0;
 unsigned long fanInterTime = 0;
 unsigned long fanTime = 0;
+unsigned long lastWifiCheck = 0;
 
 void applyMode() {
   if (mode == "OFF")
@@ -86,6 +87,7 @@ void setup() {
     IPAddress IP = WiFi.softAPIP();
   }
   else {
+    WiFi.mode(WIFI_STA);
     WiFi.begin(wifiData.getSsid(), wifiData.getPassword());
     
     while (WiFi.status() != WL_CONNECTED)
@@ -453,5 +455,19 @@ void loop()
     json += "}";
 
     ws.textAll(json);
+  }
+  wifiWatchdog();
+}
+
+
+void wifiWatchdog() 
+{
+  if (millis() - lastWifiCheck < 5000)
+    return;
+  lastWifiCheck = millis();
+
+  if (WiFi.status() != WL_CONNECTED) {
+    WiFi.disconnect();
+    WiFi.begin(wifiData.getSsid(), wifiData.getPassword());
   }
 }
