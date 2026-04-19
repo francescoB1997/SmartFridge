@@ -31,7 +31,7 @@
 #define LAST_FAN_COOL_INTERTIME_AUTO "lastFCITA"
 
 
-enum mode{OFF, HEAT, FREDDO};
+enum mode{OFF, CALDO, FREDDO};
 
 class ReleDriver{
   private:

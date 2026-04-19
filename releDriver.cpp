@@ -230,7 +230,7 @@ void ReleDriver::changeMode(mode newMode){
 }
 
 void ReleDriver::HeatOn(){
-  if (this->state != HEAT)
+  if (this->state != CALDO)
     this->allOff();
   this->generaliOn();
 

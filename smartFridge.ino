@@ -37,8 +37,8 @@ void applyMode() {
     relayModule.allOffWithStore();
   else if (mode == "FREDDO") {
     relayModule.changeMode(FREDDO);
-  } else if (mode == "HEAT") {
-    relayModule.changeMode(HEAT);
+  } else if (mode == "CALDO") {
+    relayModule.changeMode(CALDO);
   }
   
   workingMode = relayModule.getState();
@@ -111,8 +111,8 @@ void setup() {
   workingMode = relayModule.loadStoredState();
   if (workingMode == OFF)
     mode = "OFF";
-  else if (workingMode == HEAT)
-    mode = "HEAT";
+  else if (workingMode == CALDO)
+    mode = "CALDO";
   else if (workingMode == FREDDO)
     mode = "FREDDO";
 
@@ -168,8 +168,8 @@ void setup() {
 
     if (msg == "MODE:FREDDO") {
       mode = "FREDDO";
-    } else if (msg == "MODE:HEAT") {
-      mode = "HEAT";
+    } else if (msg == "MODE:CALDO") {
+      mode = "CALDO";
     }
 
     if (msg == "AUTO:ON") {
@@ -276,8 +276,8 @@ void loop()
       if (autoMode) {
         Serial.println("# AUTO MODE ON");
         switch(workingMode){
-          case HEAT:
-              Serial.print("* CASE HEAT. Heat Offset: ");
+          case CALDO:
+              Serial.print("* CASE CALDO. Heat Offset: ");
               Serial.println(relayModule.heatOffsetTemp);
               if (currentTemp < (setTemp - relayModule.heatOffsetTemp) ) {
                 if (relayModule.getFanState()) {
@@ -381,7 +381,7 @@ void loop()
         //fanInterTime = 0; // Permette alla ri-attivazione della AUTO-FAN, di attivare subito la ventola
       }
     }
-    else if (workingMode == HEAT) {
+    else if (workingMode == CALDO) {
       if ((!relayModule.getPeltierState()) && (relayModule.fanHeatAuto) && ((!autoMode) || (currentTemp >= (setTemp - relayModule.heatOffsetTemp))) )
       {
           if (relayModule.getFanState() || ((millis() - fanInterTime) > (relayModule.fanHeatAutoInterTime * 1000)))

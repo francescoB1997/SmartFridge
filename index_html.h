@@ -362,7 +362,7 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   document.querySelector(".heat").addEventListener("click", function() {
-    ws.send("MODE:HEAT");
+    ws.send("MODE:CALDO");
   });
 
   document.getElementById("autoToggle").addEventListener("change", function() {
